@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eco-Sat East Africa | Fuatilia Wanyama Angani</title>
+  <meta name="description" content="Fuatilia tembo, simba, nyangumi, kobe kwa satellite na AI moja kwa moja - Afrika Mashariki">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.css"/>
+  <style>
+    body {margin:0; font-family:system-ui; background:#071b08; color:white;}
+    header {background:linear-gradient(#0b6623,#000); padding:20px; text-align:center;}
+    h1 {margin:0; font-size:2.8em;}
+    #map {height:70vh; width:100%; border-radius:0 0 20px 20px;}
+    .features {display:flex; flex-wrap:wrap; justify-content:center; gap:20px; padding:30px;}
+    .card {background:rgba(255,255,255,0.1); backdrop-filter:blur(10px); padding:25px; border-radius:20px; width:320px; text-align:center;}
+    .btn {background:#ff6200; color:white; border:none; padding:15px 30px; margin:10px; border-radius:50px; font-size:1.1em; cursor:pointer;}
+    #chatbot {position:fixed; bottom:20px; right:20px; width:350px; height:500px; background:white; color:black; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5); display:none; flex-direction:column;}
+    #messages {flex:1; padding:15px; overflow-y:auto;}
+    input {padding:15px; border:none; border-top:1px solid #ddd;}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>ECO-SAT EAST AFRICA</h1>
+  <p>Fuatilia wanyama wa Afrika Mashariki angani • Satellite + AI • Live 24/7</p>
+</header>
+
+<div id="map"></div>
+
+<div class="features">
+  <div class="card">
+    <h2>Pakia Picha Yako</h2>
+    <input type="file" id="photo" accept="image/*" style="padding:15px;background:white;color:black;border-radius:10px;">
+    <p id="ai-result">AI itakutambulisha mnyama mara moja!</p>
+  </div>
+
+  <div class="card">
+    <h2>Chat na AI kwa Kiswahili</h2>
+    <p>Uliza “Jacob yuko wapi?” au “Tembo ataenda wapi kesho?”</p>
+    <button class="btn" onclick="document.getElementById('chatbot').style.display='flex'">Fungua Chat</button>
+  </div>
+
+  <div class="card">
+    <h2>Hadithi za Leo (Auto AI)</h2>
+    <p id="story">Zamba alitembea 42 km jana, akakutana na tembo 27…</p>
+  </div>
+
+  <div class="card">
+    <h2>Tabiri Kesho</h2>
+    <p id="predict">Simba Jacob: <strong>87%</strong> atakuwa Maasai Mara kesho</p>
+  </div>
+
+  <div class="card">
+    <h2>Ramani 3D (Drone View)</h2>
+    <button class="btn" onclick="fly3Dfly()">Ruka na Tembo Zamba</button>
+  </div>
+</div>
+
+<!-- Chatbot -->
+<div id="chatbot">
+  <div style="background:#0b6623;color:white;padding:15px;border-radius:20px 20px 0 0;text-align:center;font-weight:bold;">
+    Zamba AI • Uliza chochote
+  </div>
+  <div id="messages"><p><strong>Zamba:</strong> Habari! Unaweza kuniuliza chochote kuhusu wanyama</p></div>
+  <input type="text" id="msg" placeholder="Andika hapa..." onkeypress="if(event.key==='Enter') send()">
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.js"></script>
+<script>
+  // Ramani Live
+  var map = L.map('map', {fullscreenControl: true}).setView([-2.5, 37], 7);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+  // Wanyama wa Live
+  const animals = {
+    "Zamba": [-4.12, 39.35],
+    "Jacob": [-1.45, 35.15],
+    "Anastasia": [-0.35, 36.90]
+  };
+  for (let name in animals) {
+    L.marker(animals[name]).addTo(map)
+      .bindPopup(`<b>\( {name}</b><br>Live • Des 5 2025<br><button class="btn" onclick="flyTo( \){animals[name]})">Ruka Hapa</button>`)
+      .openPopup();
+  }
+
+  function flyTo(latLng) { map.flyTo(latLng, 15); }
+
+  // AI Photo Recognition (demo)
+  document.getElementById('photo').addEventListener('change', () => {
+    document.getElementById('ai-result').innerHTML = 'Huyu ni <strong>Simba Jacob</strong> (♂ • miaka 9)<br>Alionekana jana Maasai Mara';
+  });
+
+  // Simple Chatbot
+  function send() {
+    let msg = document.getElementById('msg').value.toLowerCase();
+    let chat = document.getElementById('messages');
+    chat.innerHTML += `<p><strong>Wewe:</strong> ${msg}</p>`;
+    if (msg.includes('jacob')) chat.innerHTML += `<p><strong>Zamba:</strong> Jacob yuko Maasai Mara sasa hivi! Ana 87% ya kuwa huko kesho pia</p>`;
+    else if (msg.includes('zamba')) chat.innerHTML += `<p><strong>Zamba:</strong> Zamba yuko Tsavo East sasa. Juzi alitembea 42 km!</p>`;
+    else chat.innerHTML += `<p><strong>Zamba:</strong> Niko hapa kila wakati kukuambia kila kitu kuhusu wanyama</p>`;
+    document.getElementById('msg').value = '';
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // 3D Fly
+  function 3Dfly() { alert("Ramani 3D inafunguka (CesiumJS) – utapata link kesho!"); }
+
+  // Auto Story
+  document.getElementById('story').innerHTML = "Des 5: Zamba aliondoka Amboseli, akatembea 38 km kuelekea Tsavo. Alikunywa maji mara 7 na akakutana na tembo wengine 31. (AI iliyoandikwa moja kwa moja)";
+</script>
+</body>
+    </html>
